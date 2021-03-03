@@ -1,0 +1,29 @@
+global !p
+import json
+config = os.path.expanduser('~/.config/conventional-commit/config')
+with open(config) as fd:
+	types = json.load(fd)
+endglobal
+
+snippet b "BREAKING CHANGE" b
+`!p snip.rv = types.get('breaking', dict(emoji=':boom:'))['emoji']` ${1}!: ${2}
+`!p snip.rv = '\n' if t[4] else ''`${4}
+`!p snip.rv = '\n' if t[4] else ''`BREAKING CHANGE: ${3}
+${5}
+endsnippet
+
+snippet c "Heading" b
+`!p snip.rv = types.get(t[1].split('(')[0], dict(emoji=':pencil:'))['emoji']` ${1}: ${2}
+
+${3}
+endsnippet
+
+snippet f "BREAKING CHANGE" b
+BREAKING CHANGE: ${1}
+${2}
+endsnippet
+
+snippet a "Co-authorship" b
+	Co-authored-by: ${1} <${2}>
+${3}
+endsnippet
