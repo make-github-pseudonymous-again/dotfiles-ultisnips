@@ -3,22 +3,35 @@ import json
 config = os.path.expanduser('~/.config/conventional-commit/config')
 with open(config) as fd:
 	types = json.load(fd)
+def is_breaking(body):
+	return any(map(lambda line: line.startswith('BREAKING CHANGE:'), body.splitlines()))
+def emj(typ, body):
+	brk = is_breaking(body)
+	typ = 'breaking' if brk else typ
+	dflt = dict(emoji=':boom:') if brk else dict(emoji=':pencil:')
+	return types.get(typ, dflt)['emoji']
+def sp(scope):
+	return '(' if scope else ''
+def ss(scope):
+	return ')' if scope else ''
+def bs(body):
+	return '!' if is_breaking(body) else ''
 endglobal
 
-snippet b "BREAKING CHANGE" b
+snippet B "BREAKING CHANGE heading" b
 `!p snip.rv = types.get('breaking', dict(emoji=':boom:'))['emoji']` ${1}!: ${2}
 `!p snip.rv = '\n' if t[4] else ''`${4}
 `!p snip.rv = '\n' if t[4] else ''`BREAKING CHANGE: ${3}
 ${5}
 endsnippet
 
-snippet c "Heading" b
-`!p snip.rv = types.get(t[1].split('(')[0], dict(emoji=':pencil:'))['emoji']` ${1}: ${2}
+snippet H "Heading" b
+`!p snip.rv = emj(t[1], t[4])` ${1}`!p snip.rv = sp(t[2])`${2}`!p snip.rv = ss(t[2])``!p snip.rv = bs(t[4])`: ${3}
 
-${3}
+${4}
 endsnippet
 
-snippet f "BREAKING CHANGE" b
+snippet b "BREAKING CHANGE" b
 BREAKING CHANGE: ${1}
 ${2}
 endsnippet
