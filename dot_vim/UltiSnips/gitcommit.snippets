@@ -5,11 +5,29 @@ with open(config) as fd:
 	types = json.load(fd)
 def is_breaking(body):
 	return any(map(lambda line: line.startswith('BREAKING CHANGE:'), body.splitlines()))
-def emj(typ, body):
+def emj(typ, scope, subject, body):
 	brk = is_breaking(body)
 	typ = 'breaking' if brk else typ
-	dflt = dict(emoji=':boom:') if brk else dict(emoji=':pencil:')
-	return types.get(typ, dflt)['emoji']
+	dflt = dict(emoji=':boom:') if brk else dict(emoji=':pencil2:')
+	res = types.get(typ, dflt).get('emoji')
+	error_emoji = ':bangbang:'
+	if res is None: return error_emoji
+	if isinstance(res, str): return res
+	if isinstance(res, dict):
+		if 'scope' in res:
+			for key, val in res['scope'].items():
+				if scope == key:
+					return val
+		if 'subject' in res:
+			haystack = set(re.sub(r"[^\w]", " ", subject.lower()).split())
+			matches = filter(haystack.__contains__, res['subject'].keys())
+			try:
+				first_match = next(matches)
+				return res['subject'][first_match]
+			except StopIteration:
+				pass
+		return res.get('default', error_emoji)
+	return error_emoji
 def sp(scope):
 	return '(' if scope else ''
 def ss(scope):
@@ -26,7 +44,7 @@ ${5}
 endsnippet
 
 snippet H "Heading" b
-`!p snip.rv = emj(t[1], t[4])` ${1}`!p snip.rv = sp(t[2])`${2}`!p snip.rv = ss(t[2])``!p snip.rv = bs(t[4])`: ${3}
+`!p snip.rv = emj(t[1], t[2], t[3], t[4])` ${1}`!p snip.rv = sp(t[2])`${2}`!p snip.rv = ss(t[2])``!p snip.rv = bs(t[4])`: ${3}
 
 ${4}
 endsnippet
