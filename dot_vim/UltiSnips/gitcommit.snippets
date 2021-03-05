@@ -14,10 +14,6 @@ def emj(typ, scope, subject, body):
 	if res is None: return error_emoji
 	if isinstance(res, str): return res
 	if isinstance(res, dict):
-		if 'scope' in res:
-			for key, val in res['scope'].items():
-				if scope == key:
-					return val
 		if 'subject' in res:
 			haystack = set(re.sub(r"[^\w]", " ", subject.lower()).split())
 			matches = filter(haystack.__contains__, res['subject'].keys())
@@ -26,6 +22,10 @@ def emj(typ, scope, subject, body):
 				return res['subject'][first_match]
 			except StopIteration:
 				pass
+		if 'scope' in res:
+			for key, val in res['scope'].items():
+				if scope == key:
+					return val
 		return res.get('default', error_emoji)
 	return error_emoji
 def sp(scope):
